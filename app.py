@@ -160,32 +160,26 @@ def obtenir_bicis_actuals(id_estacio_buscar):
 bicis_ara_mateix = obtenir_bicis_actuals(id_seleccionat)
 
 # --- 4. PREDICCIÓ ---
-# Nota: L'ordre ha de ser EXACTAMENT el mateix que vas usar al X_train de Kaggle
-# Suposem l'ordre: hora_decimal, dia_setmana, lat, lon
 # Forcem el DataFrame a tenir l'ordre exacte de Kaggle abans de predir
-input_dades = pd.DataFrame([[hora_decimal, dia_setmana, lat, lon, temp_actual, pluja_actual, status_actual, bicis_ara_mateix]], 
-                           columns=['hora_decimal', 'dia_setmana', 'latitude', 'longitude', 'temperature_2m', 'pluja_activa', 'status_num', 'bicis_estat_anterior'])
 ordre_correcte = ['hora_decimal', 'dia_setmana', 'latitude', 'longitude', 'temperature_2m', 'pluja_activa', 'status_num', 'bicis_estat_anterior']
-input_dades = input_dades[ordre_correcte]
+input_dades = pd.DataFrame([[hora_decimal, dia_setmana, lat, lon, temp_actual, pluja_actual, status_actual, bicis_ara_mateix]], 
+                           columns=ordre_correcte)
 
-# Ara sí, fem la predicció de forma segura
-prediccio = model_bicing_bosc_definitiu.predict(input_dades)[0]
+# Això ens ensenyarà la taula a la web per "espiar" què rep la IA
+st.write("**Dades enviades al model:**")
+st.write(input_dades)
 
+# Fem la predicció NOMÉS quan es clica el botó
 if st.button("Consultar Bicis Disponibles"):
     prediccio = model_bicing_bosc_definitiu.predict(input_dades)[0]
     
     st.metric(label="Bicicletes disponibles estimades", value=f"{round(prediccio, 1)}")
     
     if prediccio < 1:
-        st.error("L'estació probablement no en tindra cap")
+        st.error("L'estació probablement no en tindrà cap.")
     elif prediccio < 3:
-        st.warning("Quedaran molt poques bicis")
+        st.warning("Quedaran molt poques bicis.")
     elif prediccio < 6:
-        st.success("Hi haurà bicis suficients")
+        st.success("Hi haurà bicis suficients.")
     else:
-        st.success("Hi haurà moltes bicis")
-# Això ens ensenyarà la taula a la web per "espiar" què rep la IA
-st.write(input_dades)
-
-# El teu codi de predicció de sota:
-prediccio = model_bicing_bosc_definitiu.predict(input_dades)[0]
+        st.success("Hi haurà moltes bicis.")
