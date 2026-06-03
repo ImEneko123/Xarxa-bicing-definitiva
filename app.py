@@ -163,7 +163,7 @@ bicis_ara_mateix = obtenir_bicis_actuals(estacio_seleccionada)
 # 3. Fem la predicció posant 'bicis_ara_mateix' al final de la llista (o on toqui segons el teu model)
 # Recorda que l'ordre ha de ser EXACTAMENT el mateix que tenies a Kaggle!
 
-prediccio = model.predict(dades_per_al_model)
+prediccio = model_bicing_bosc_definitiu.predict(dades_per_al_model)
 # --- 4. PREDICCIÓ ---
 # Nota: L'ordre ha de ser EXACTAMENT el mateix que vas usar al X_train de Kaggle
 # Suposem l'ordre: hora_decimal, dia_setmana, lat, lon
