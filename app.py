@@ -136,13 +136,41 @@ def obtenir_estat_estacio(id_estacio):
     return 1
 id_seleccionat = df_estacions[df_estacions['opcio_visual'] == estacio_seleccionada]['id'].values[0]
 status_actual = obtenir_estat_estacio(id_seleccionat)
+
+@st.cache_data(ttl=3)
+def obtenir_bicis_actuals(id):
+    url = "https://api.bsmsa.eu/ext/api/bsm/gbfs/v2/en/station_status"
+    
+    try:
+        resposta = requests.get(url)
+        dades = resposta.json()
+        
+        # Entrem a la llista on hi ha totes les estacions de Barcelona
+        estacions = dades['data']['stations']
+        
+        # Busquem la nostra estació concreta
+        for estacio in estacions:
+            if str(estacio['id']) == str(id_estacio):
+                return estacio['num_bikes_available']
+                
+    except Exception as e:
+        # Si falla internet o l'API està caiguda, retornem un valor neutre
+        return 0 
+        
+    return 0 # Si per algun motiu no troba l'ID
+bicis_ara_mateix = obtenir_bicis_actuals(estacio_seleccionada)
+
+# 3. Fem la predicció posant 'bicis_ara_mateix' al final de la llista (o on toqui segons el teu model)
+# Recorda que l'ordre ha de ser EXACTAMENT el mateix que tenies a Kaggle!
+
+prediccio = model.predict(dades_per_al_model)
 # --- 4. PREDICCIÓ ---
 # Nota: L'ordre ha de ser EXACTAMENT el mateix que vas usar al X_train de Kaggle
 # Suposem l'ordre: hora_decimal, dia_setmana, lat, lon
 # Forcem el DataFrame a tenir l'ordre exacte de Kaggle abans de predir
-input_dades = pd.DataFrame([[hora_decimal, dia_setmana, lat, lon, temp_actual, pluja_actual, status_actual]], 
-                           columns=['hora_decimal', 'dia_setmana', 'latitude', 'longitude', 'temperature_2m', 'pluja_activa', 'status_num'])
-ordre_correcte = ['hora_decimal', 'dia_setmana', 'latitude', 'longitude', 'temperature_2m', 'pluja_activa', 'status_num']
+input_dades = pd.DataFrame([[hora_decimal, dia_setmana, lat, lon, temp_actual, pluja_actual, status_actual, bicis_ara_mateix]], 
+                           columns=['hora_decimal', 'dia_setmana', 'latitude', 'longitude', 'temperature_2m', 'pluja_activa', 'status_num', 'bicis_estat_anterior'])
+ordre_correcte = ['hora_decimal', 'dia_setmana', 'latitude', 'longitude', 'temperature_2m', 'pluja_activa', 'status_num', 'bicis_estat_anterior']
 input_dades = input_dades[ordre_correcte]
 
 # Ara sí, fem la predicció de forma segura
