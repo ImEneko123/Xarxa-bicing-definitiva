@@ -96,15 +96,7 @@ def obtenir_clima_futur(lat, lon, hora_seleccionada):
     except Exception as e:
         st.error(f"Error en connectar amb WeatherAPI: {e}")
         return 18.0, 0  # Pla B d'emergència si falla internet
-    # Si tot està bé, continuem normal:
-    index_hora = int(hora_seleccionada)
-    temp_actual = resposta['hourly']['temperature_2m'][index_hora]
-    pluja_raw = resposta['hourly']['precipitation'][index_hora]
-    
-    # Convertim la pluja a binari (0 o 1) per al teu model
-    pluja_activa = 1 if pluja_raw > 0 else 0
-    
-    return temp_actual, pluja_activa
+   
 # Cridem a la nova funció passant-li la latitud, longitud i l'hora de l'slider
 temp_actual, pluja_actual = obtenir_clima_futur(lat, lon, hora_decimal)
 
