@@ -104,34 +104,8 @@ temp_actual, pluja_actual = obtenir_clima_futur(lat, lon, hora_decimal)
 # (Opcional) Mostrem a la web el clima detectat per a aquella hora
 st.write(f"**Clima previst per a aquesta hora:** {temp_actual}°C i {'amb pluja' if pluja_actual == 1 else 'sense pluja'}")
 
-#Saber si esta tancada o oberta
-def obtenir_estat_estacio(id_estacio):
-    url = "https://api.bsmsa.eu/ext/api/bsm/gbfs/v2/en/station_status"
-    resposta = requests.get(url)
-    
-    # Comprovem que la petició ha anat bé
-    if resposta.status_code == 200:
-        dades = resposta.json()
-        estacions = dades['data']['stations']
-        
-        # Busquem la nostra estació a la llista
-        for estacio in estacions:
-            if int(estacio['station_id']) == int(id_estacio):
-                estat_text = estacio['status'] # Aquí dirà 'IN_SERVICE' o 'CLOSED'
-                
-                # Ho convertim a números per la nostra IA (1 = Obert, 0 = Tancat)
-                if estat_text == 'IN_SERVICE':
-                    return 1
-                else:
-                    return 0
-                    
-    # Si alguna cosa falla amb l'internet, assumim que està oberta (1) per no trencar l'app
-    return 1
-id_seleccionat = df_estacions[df_estacions['opcio_visual'] == estacio_seleccionada]['id'].values[0]
-status_actual = obtenir_estat_estacio(id_seleccionat)
-
 @st.cache_data(ttl=3)
-def obtenir_bicis_actuals(id_estacio_buscar):
+def obtenir_dades_bicing_api(id_estacio_buscar):
     url = "https://api.bsmsa.eu/ext/api/bsm/gbfs/v2/en/station_status"
     
     try:
@@ -139,26 +113,33 @@ def obtenir_bicis_actuals(id_estacio_buscar):
         # Comprovem que la petició ha anat bé
         if resposta.status_code == 200:
             dades = resposta.json()
-            
-            # Entrem a la llista on hi ha totes les estacions de Barcelona
             estacions = dades['data']['stations']
             
             # Busquem la nostra estació concreta
             for estacio in estacions:
-                # Comparem l'ID de l'estació de l'API (station_id) amb l'ID que li passem a la funció
-                if str(estacio['station_id']) == str(id_estacio_buscar):
-                    return estacio['num_bikes_available']
+                # CLAU: Comparem fent servir int() perquè "1.0" i "1" es llegeixin igual
+                if int(estacio['station_id']) == int(id_estacio_buscar):
+                    
+                    # 1. Obtenim si està obert o tancat
+                    estat_text = estacio['status']
+                    status_num = 1 if estat_text == 'IN_SERVICE' else 0
+                    
+                    # 2. Obtenim les bicis actuals
+                    bicis = estacio['num_bikes_available']
+                    
+                    # Retornem les dues dades alhora
+                    return status_num, bicis
                     
     except Exception as e:
-        # Et recomano posar un st.error aquí temporalment si vols veure l'error real a la web
-        # st.error(f"Error intern de l'API: {e}")
-        return 0 
+        # Ignorem l'error per no trencar l'app visualment
+        pass 
         
-    return 0 # Si per algun motiu no troba l'ID
+    # Si per algun motiu l'API cau o no troba la parada, retornem Obert(1) i 0 Bicis per defecte
+    return 1, 0 
 
-# CRÍTIC: Cridem a la funció passant-li l'id_seleccionat (el número), NO el text visual.
-# L'id_seleccionat ja el tens calculat just a sobre per a la funció obtenir_estat_estacio!
-bicis_ara_mateix = obtenir_bicis_actuals(id_seleccionat)
+# Calculem l'ID i cridem a la nova funció per obtenir les dues coses de cop
+id_seleccionat = df_estacions[df_estacions['opcio_visual'] == estacio_seleccionada]['id'].values[0]
+status_actual, bicis_ara_mateix = obtenir_dades_bicing_api(id_seleccionat)
 
 # --- 4. PREDICCIÓ ---
 # Forcem el DataFrame a tenir l'ordre exacte de Kaggle abans de predir
