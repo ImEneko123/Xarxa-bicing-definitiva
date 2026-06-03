@@ -137,6 +137,7 @@ def obtenir_dades_bicing_api(id_estacio_buscar):
         st.error(f"Error tècnic en connectar a l'API: {e}")
         
     return 1, 0
+id_seleccionat = df_estacions[df_estacions['opcio_visual'] == estacio_seleccionada]['id'].values[0]
 status_actual, bicis_ara_mateix = obtenir_dades_bicing_api(id_seleccionat)
 # --- 4. PREDICCIÓ ---
 # Forcem el DataFrame a tenir l'ordre exacte de Kaggle abans de predir
