@@ -138,27 +138,34 @@ id_seleccionat = df_estacions[df_estacions['opcio_visual'] == estacio_selecciona
 status_actual = obtenir_estat_estacio(id_seleccionat)
 
 @st.cache_data(ttl=3)
-def obtenir_bicis_actuals(id):
+def obtenir_bicis_actuals(id_estacio_buscar):
     url = "https://api.bsmsa.eu/ext/api/bsm/gbfs/v2/en/station_status"
     
     try:
         resposta = requests.get(url)
-        dades = resposta.json()
-        
-        # Entrem a la llista on hi ha totes les estacions de Barcelona
-        estacions = dades['data']['stations']
-        
-        # Busquem la nostra estació concreta
-        for estacio in estacions:
-            if str(estacio_seleccionada['id']) == str(id_estacio):
-                return estacio['num_bikes_available']
-                
+        # Comprovem que la petició ha anat bé
+        if resposta.status_code == 200:
+            dades = resposta.json()
+            
+            # Entrem a la llista on hi ha totes les estacions de Barcelona
+            estacions = dades['data']['stations']
+            
+            # Busquem la nostra estació concreta
+            for estacio in estacions:
+                # Comparem l'ID de l'estació de l'API (station_id) amb l'ID que li passem a la funció
+                if str(estacio['station_id']) == str(id_estacio_buscar):
+                    return estacio['num_bikes_available']
+                    
     except Exception as e:
-        # Si falla internet o l'API està caiguda, retornem un valor neutre
+        # Et recomano posar un st.error aquí temporalment si vols veure l'error real a la web
+        # st.error(f"Error intern de l'API: {e}")
         return 0 
         
     return 0 # Si per algun motiu no troba l'ID
-bicis_ara_mateix = obtenir_bicis_actuals(estacio_seleccionada)
+
+# CRÍTIC: Cridem a la funció passant-li l'id_seleccionat (el número), NO el text visual.
+# L'id_seleccionat ja el tens calculat just a sobre per a la funció obtenir_estat_estacio!
+bicis_ara_mateix = obtenir_bicis_actuals(id_seleccionat)
 
 # --- 4. PREDICCIÓ ---
 # Nota: L'ordre ha de ser EXACTAMENT el mateix que vas usar al X_train de Kaggle
