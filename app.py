@@ -150,7 +150,7 @@ def obtenir_bicis_actuals(id):
         
         # Busquem la nostra estació concreta
         for estacio in estacions:
-            if str(estacio['id']) == str(id_estacio):
+            if str(estacio_seleccionada['id']) == str(id_estacio):
                 return estacio['num_bikes_available']
                 
     except Exception as e:
