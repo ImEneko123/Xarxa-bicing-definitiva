@@ -158,7 +158,7 @@ def obtenir_bicis_actuals(id):
         return 0 
         
     return 0 # Si per algun motiu no troba l'ID
-bicis_ara_mateix = obtenir_bicis_actuals(estacio_seleccionada['id'])
+bicis_ara_mateix = obtenir_bicis_actuals(estacio_seleccionada[id])
 
 # --- 4. PREDICCIÓ ---
 # Nota: L'ordre ha de ser EXACTAMENT el mateix que vas usar al X_train de Kaggle
