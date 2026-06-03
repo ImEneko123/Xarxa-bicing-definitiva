@@ -6,7 +6,7 @@ import requests
 import io
 @st.cache_resource
 def carregar_model_des_de_dropbox():
-    url = "https://www.dropbox.com/scl/fi/7q27qgr70j41byczov5q2/model_bicing_bosc.pkl?rlkey=tm9sr1sgbv5uin3uha0br4h3r&st=u489vb8v&dl=1"
+    url = "https://www.dropbox.com/scl/fi/a5uqlxapxfh7wisbsw5wc/model_bicing_bosc_definitiu.pkl?rlkey=ispa6kkcscw9ukxvdt8tpjcf0&st=7eefesuu&dl=1"
     
     # Dropbox ens dona el fitxer directe sense pantalles de virus!
     resposta = requests.get(url)
@@ -15,7 +15,7 @@ def carregar_model_des_de_dropbox():
     return pickle.load(fitxer_memoria)
 
 # Carreguem el model
-model_bicing_bosc = carregar_model_des_de_dropbox()
+model_bicing_bosc_definitiu = carregar_model_des_de_dropbox()
 # Graella per als minuts d'antelació
 minuts_futur = st.text_input("Minuts per arribar:")
 
@@ -146,10 +146,10 @@ ordre_correcte = ['hora_decimal', 'dia_setmana', 'latitude', 'longitude', 'tempe
 input_dades = input_dades[ordre_correcte]
 
 # Ara sí, fem la predicció de forma segura
-prediccio = model_bicing_bosc.predict(input_dades)[0]
+prediccio = model_bicing_bosc_definitiu.predict(input_dades)[0]
 
 if st.button("Consultar Bicis Disponibles"):
-    prediccio = model_bicing_bosc.predict(input_dades)[0]
+    prediccio = model_bicing_bosc_definitiu.predict(input_dades)[0]
     
     st.metric(label="Bicicletes disponibles estimades", value=f"{round(prediccio, 1)}")
     
@@ -165,4 +165,4 @@ if st.button("Consultar Bicis Disponibles"):
 st.write(input_dades)
 
 # El teu codi de predicció de sota:
-prediccio = model_bicing_bosc.predict(input_dades)[0]
+prediccio = model_bicing_bosc_definitiu.predict(input_dades)[0]
