@@ -108,39 +108,35 @@ st.write(f"**Clima previst per a aquesta hora:** {temp_actual}°C i {'amb pluja'
 def obtenir_dades_bicing_api(id_estacio_buscar):
     url = "https://api.bsmsa.eu/ext/api/bsm/gbfs/v2/en/station_status"
     
+    # CLAU: Ens fem passar per un navegador web per evitar el bloqueig
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
+    
     try:
-        resposta = requests.get(url)
-        # Comprovem que la petició ha anat bé
+        # Afegim els headers a la petició
+        resposta = requests.get(url, headers=headers)
+        
         if resposta.status_code == 200:
             dades = resposta.json()
             estacions = dades['data']['stations']
             
-            # Busquem la nostra estació concreta
             for estacio in estacions:
-                # CLAU: Comparem fent servir int() perquè "1.0" i "1" es llegeixin igual
                 if int(estacio['station_id']) == int(id_estacio_buscar):
-                    
-                    # 1. Obtenim si està obert o tancat
                     estat_text = estacio['status']
                     status_num = 1 if estat_text == 'IN_SERVICE' else 0
-                    
-                    # 2. Obtenim les bicis actuals
                     bicis = estacio['num_bikes_available']
                     
-                    # Retornem les dues dades alhora
                     return status_num, bicis
+        else:
+            # Si l'API ens bloqueja, ens ho ensenyarà a la pantalla en vermell
+            st.error(f"L'API ha retornat un error de connexió: {resposta.status_code}")
                     
     except Exception as e:
-        # Ignorem l'error per no trencar l'app visualment
-        pass 
+        # Si hi ha qualsevol altre error (ex: no hi ha internet) ens ho dirà
+        st.error(f"Error tècnic en connectar a l'API: {e}")
         
-    # Si per algun motiu l'API cau o no troba la parada, retornem Obert(1) i 0 Bicis per defecte
-    return 1, 0 
-
-# Calculem l'ID i cridem a la nova funció per obtenir les dues coses de cop
-id_seleccionat = df_estacions[df_estacions['opcio_visual'] == estacio_seleccionada]['id'].values[0]
-status_actual, bicis_ara_mateix = obtenir_dades_bicing_api(id_seleccionat)
-
+    return 1, 0
 # --- 4. PREDICCIÓ ---
 # Forcem el DataFrame a tenir l'ordre exacte de Kaggle abans de predir
 ordre_correcte = ['hora_decimal', 'dia_setmana', 'latitude', 'longitude', 'temperature_2m', 'pluja_activa', 'status_num', 'bicis_estat_anterior']
