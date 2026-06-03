@@ -137,6 +137,7 @@ def obtenir_dades_bicing_api(id_estacio_buscar):
         st.error(f"Error tècnic en connectar a l'API: {e}")
         
     return 1, 0
+status_actual, bicis_ara_mateix = obtenir_dades_bicing_api(id_seleccionat)
 # --- 4. PREDICCIÓ ---
 # Forcem el DataFrame a tenir l'ordre exacte de Kaggle abans de predir
 ordre_correcte = ['hora_decimal', 'dia_setmana', 'latitude', 'longitude', 'temperature_2m', 'pluja_activa', 'status_num', 'bicis_estat_anterior']
